@@ -38,6 +38,11 @@ function playerLabel(player: Player, mode: GameMode): string {
   return mode === 'pvc' ? 'komputera' : 'gracza 2';
 }
 
+function playerNominative(player: Player, mode: GameMode): string {
+  if (player === 1) return 'Gracz 1';
+  return mode === 'pvc' ? 'Komputer' : 'Gracz 2';
+}
+
 function playerColorClass(player: Player): string {
   return player === 1 ? 'game-status-light' : 'game-status-dark';
 }
@@ -249,7 +254,7 @@ export function renderGame(
       if (mode === 'net' && netSession) {
         status.textContent = state.winner === netSession.localPlayer ? 'Wygrałeś!' : 'Przeciwnik wygrywa!';
       } else {
-        status.textContent = `Wygrywa ${playerLabel(state.winner, mode)}!`;
+        status.textContent = `${playerNominative(state.winner, mode)} wygrywa!`;
       }
       status.classList.add('game-status-win', playerColorClass(state.winner));
     } else if (state.aiThinking) {

@@ -169,6 +169,8 @@ h1 {
   color: var(--color-text);
   width: 100%;
   max-width: 320px;
+  margin: 0 auto;
+  display: block;
 }
 
 .net-code-input:focus {
