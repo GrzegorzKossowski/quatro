@@ -37,17 +37,7 @@ export function renderNet(container: HTMLElement, actions: NetActions): void {
   function showChoice(): void {
     wrapper.innerHTML = '';
 
-    const header = document.createElement('div');
-    header.className = 'net-header';
-
-    const title = document.createElement('h1');
-    title.textContent = 'Quatro';
-
-    const modeLabel = document.createElement('p');
-    modeLabel.className = 'net-mode-label';
-    modeLabel.textContent = 'gra sieciowa (LAN)';
-
-    header.append(title, modeLabel);
+    const header = makeHeader('gra sieciowa (LAN)');
 
     const info = document.createElement('p');
     info.className = 'subtitle';
@@ -66,8 +56,7 @@ export function renderNet(container: HTMLElement, actions: NetActions): void {
 
     wrapper.innerHTML = '';
 
-    const title = document.createElement('h1');
-    title.textContent = 'Kod pokoju';
+    const header = makeHeader('kod pokoju');
 
     const code = document.createElement('p');
     code.className = 'net-room-code';
@@ -82,7 +71,7 @@ export function renderNet(container: HTMLElement, actions: NetActions): void {
       showChoice();
     }, 'btn-secondary');
 
-    wrapper.append(title, code, status, cancelButton);
+    wrapper.append(header, code, status, cancelButton);
 
     s.on('peer-joined', () => {
       status.textContent = 'Przeciwnik dołączył. Rozpoczynanie gry…';
@@ -97,8 +86,7 @@ export function renderNet(container: HTMLElement, actions: NetActions): void {
   function showJoinForm(): void {
     wrapper.innerHTML = '';
 
-    const title = document.createElement('h1');
-    title.textContent = 'Dołącz do pokoju';
+    const header = makeHeader('dołącz do pokoju');
 
     const input = document.createElement('input');
     input.type = 'text';
@@ -119,7 +107,7 @@ export function renderNet(container: HTMLElement, actions: NetActions): void {
       showChoice();
     }, 'btn-secondary');
 
-    wrapper.append(title, input, connectButton, status, backButton);
+    wrapper.append(header, input, connectButton, status, backButton);
     input.focus();
 
     function attemptJoin(): void {
@@ -157,5 +145,20 @@ export function renderNet(container: HTMLElement, actions: NetActions): void {
     button.textContent = label;
     button.addEventListener('click', onClick);
     return button;
+  }
+
+  function makeHeader(modeLabelText: string): HTMLDivElement {
+    const header = document.createElement('div');
+    header.className = 'net-header';
+
+    const title = document.createElement('h1');
+    title.textContent = 'Quatro';
+
+    const modeLabel = document.createElement('p');
+    modeLabel.className = 'net-mode-label';
+    modeLabel.textContent = modeLabelText;
+
+    header.append(title, modeLabel);
+    return header;
   }
 }
