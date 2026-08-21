@@ -1,0 +1,49 @@
+export interface MenuActions {
+  onLocalGame: () => void;
+  onRules: () => void;
+  onAbout: () => void;
+}
+
+export function renderMenu(container: HTMLElement, actions: MenuActions): void {
+  container.innerHTML = '';
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'screen screen-menu';
+
+  const title = document.createElement('h1');
+  title.textContent = 'Dao';
+
+  const subtitle = document.createElement('p');
+  subtitle.className = 'subtitle';
+  subtitle.textContent = 'Fanowski klon klasycznej gry planszowej';
+
+  const nav = document.createElement('div');
+  nav.className = 'menu-nav';
+
+  const localButton = makeButton('Gra lokalna (2 graczy)', actions.onLocalGame);
+
+  const vsComputerButton = makeButton('Gra z komputerem', undefined, true);
+  const lanButton = makeButton('Gra sieciowa (LAN)', undefined, true);
+
+  const rulesButton = makeButton('Zasady gry', actions.onRules, false, 'btn-secondary');
+  const aboutButton = makeButton('O grze', actions.onAbout, false, 'btn-secondary');
+
+  nav.append(localButton, vsComputerButton, lanButton, rulesButton, aboutButton);
+  wrapper.append(title, subtitle, nav);
+  container.appendChild(wrapper);
+}
+
+function makeButton(
+  label: string,
+  onClick?: () => void,
+  disabled = false,
+  extraClass?: string,
+): HTMLButtonElement {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = extraClass ? `btn ${extraClass}` : 'btn';
+  button.textContent = disabled ? `${label} (wkrótce)` : label;
+  button.disabled = disabled;
+  if (onClick) button.addEventListener('click', onClick);
+  return button;
+}
