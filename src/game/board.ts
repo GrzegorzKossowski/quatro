@@ -157,7 +157,7 @@ function hasTwoByTwoSquare(board: Board, player: Player): boolean {
   return false;
 }
 
-/** True if `player` has met any of Dao's three win conditions. */
+/** True if `player` has met any of the game's three win conditions. */
 export function checkWin(board: Board, player: Player): boolean {
   return hasFourInRow(board, player) || hasAllCorners(board, player) || hasTwoByTwoSquare(board, player);
 }

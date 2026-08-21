@@ -1,14 +1,14 @@
-# Dao — fanowski klon gry (CLAUDE.md)
+# Quatro (CLAUDE.md)
 
 Ten plik jest wersjonowany w repo, żeby sesja Claude Code na dowolnym komputerze (po `git clone`/`git pull`) miała pełny kontekst projektu bez polegania na lokalnej pamięci Claude Code (ta jest przypięta do jednej maszyny i się nie synchronizuje).
 
 ## Cel projektu
 
-Darmowy, niekomercyjny, fanowski klon planszowej gry **Dao** (zasady: gamescrafters.berkeley.edu/games.php?game=dao) jako gra przeglądarkowa (desktop + mobile web), hostowana pod `kossowski.eu/dao-the-game` przez GitHub Pages. Repo: `git@github.com:GrzegorzKossowski/dao-the-game.git`.
+**Quatro** — darmowa, niekomercyjna, fanowska gra przeglądarkowa (desktop + mobile web) inspirowana klasyczną, znaną grą planszową, hostowana pod `kossowski.eu/quatro` przez GitHub Pages. Repo: `git@github.com:GrzegorzKossowski/quatro.git`. Nazwa oryginalnej gry celowo nie pojawia się nigdzie w kodzie, treściach ani adresie URL.
 
 Siostrzany projekt referencyjny (ten sam autor, podobny stack): [atoms](https://github.com/GrzegorzKossowski/atoms) — Vite + vanilla JS + Trystero (P2P WebRTC), hostowany pod `kossowski.eu/atoms`. Tu robimy to samo, ale w **TypeScript**.
 
-## Zasady gry Dao
+## Zasady gry
 
 - Plansza 4×4. Po 4 pionki na gracza. Jasne (gracz 1) startują na głównej przekątnej, ciemne (gracz 2) na przeciwprzekątnej.
 - Ruch: pionek ślizga się w jednym z 8 kierunków na najdalsze wolne pole, bez przeskakiwania innych pionków (jak hetman, ale musi się ruszyć).
@@ -22,7 +22,7 @@ Siostrzany projekt referencyjny (ten sam autor, podobny stack): [atoms](https://
 - Interakcja: klik/tap na swój pionek → zaznaczenie + podświetlenie legalnych pól → klik/tap na pole docelowe → ruch. Brak drag-and-drop.
 - Docelowo PvC: minimax/negamax z alfa-beta (mały branching factor, brak bić).
 - Docelowo PvP sieciowe: **Trystero** (WebRTC P2P, bez własnego backendu) — jak w `atoms`. Uwaga: Trystero wymaga internetu do sygnalizacji (publiczne trackery/relaye) — to nie jest rozwiązanie działające offline w czystym LAN, tylko "P2P po kodzie pokoju bez backendu".
-- Deploy: GitHub Actions (`.github/workflows/deploy.yml`) → GitHub Pages, `vite.config.ts` ma `base: '/dao-the-game/'`.
+- Deploy: GitHub Actions (`.github/workflows/deploy.yml`) → GitHub Pages, `vite.config.ts` ma `base: '/quatro/'`.
 
 ## Struktura kodu
 

@@ -12,11 +12,11 @@ export function renderMenu(container: HTMLElement, actions: MenuActions): void {
   wrapper.className = 'screen screen-menu';
 
   const title = document.createElement('h1');
-  title.textContent = 'Dao';
+  title.textContent = 'Quatro';
 
   const subtitle = document.createElement('p');
   subtitle.className = 'subtitle';
-  subtitle.textContent = 'Fanowski klon klasycznej gry planszowej';
+  subtitle.textContent = 'Fanowski projekt znanej gry planszowej';
 
   const nav = document.createElement('div');
   nav.className = 'menu-nav';
