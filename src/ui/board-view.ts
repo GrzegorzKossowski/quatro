@@ -34,8 +34,12 @@ function samePos(a: Position, b: Position): boolean {
 }
 
 function playerLabel(player: Player, mode: GameMode): string {
-  if (player === 1) return 'gracza 1 (jasny)';
-  return mode === 'pvc' ? 'komputera (ciemny)' : 'gracza 2 (ciemny)';
+  if (player === 1) return 'gracza 1';
+  return mode === 'pvc' ? 'komputera' : 'gracza 2';
+}
+
+function playerColorClass(player: Player): string {
+  return player === 1 ? 'game-status-light' : 'game-status-dark';
 }
 
 export function renderGame(
@@ -239,25 +243,26 @@ export function renderGame(
       }
     }
 
+    status.classList.remove('game-status-light', 'game-status-dark', 'game-status-win');
+
     if (state.winner) {
       if (mode === 'net' && netSession) {
         status.textContent = state.winner === netSession.localPlayer ? 'Wygrałeś!' : 'Przeciwnik wygrywa!';
       } else {
         status.textContent = `Wygrywa ${playerLabel(state.winner, mode)}!`;
       }
-      status.classList.add('game-status-win');
+      status.classList.add('game-status-win', playerColorClass(state.winner));
     } else if (state.aiThinking) {
       status.textContent = 'Komputer myśli…';
-      status.classList.remove('game-status-win');
+      status.classList.add(playerColorClass(AI_PLAYER));
     } else if (mode === 'net' && netSession && state.peerLeft) {
       status.textContent = 'Przeciwnik opuścił grę.';
-      status.classList.remove('game-status-win');
     } else if (mode === 'net' && netSession) {
       status.textContent = state.currentPlayer === netSession.localPlayer ? 'Twoja tura' : 'Tura przeciwnika';
-      status.classList.remove('game-status-win');
+      status.classList.add(playerColorClass(state.currentPlayer));
     } else {
       status.textContent = `Ruch ${playerLabel(state.currentPlayer, mode)}`;
-      status.classList.remove('game-status-win');
+      status.classList.add(playerColorClass(state.currentPlayer));
     }
   }
 }

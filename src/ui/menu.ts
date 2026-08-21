@@ -12,6 +12,22 @@ export function renderMenu(container: HTMLElement, actions: MenuActions): void {
   const wrapper = document.createElement('div');
   wrapper.className = 'screen screen-menu';
 
+  const presenter = document.createElement('div');
+  presenter.className = 'presenter';
+
+  const presenterLink = document.createElement('a');
+  presenterLink.className = 'presenter-link';
+  presenterLink.href = 'https://kossowski.eu';
+  presenterLink.target = '_blank';
+  presenterLink.rel = 'noopener noreferrer';
+  presenterLink.textContent = 'Grzegorz Kossowski';
+
+  const presenterText = document.createElement('p');
+  presenterText.className = 'presenter-text';
+  presenterText.textContent = 'przedstawia';
+
+  presenter.append(presenterLink, presenterText);
+
   const title = document.createElement('h1');
   title.textContent = 'Quatro';
 
@@ -31,7 +47,7 @@ export function renderMenu(container: HTMLElement, actions: MenuActions): void {
   const aboutButton = makeButton('O grze', actions.onAbout, false, 'btn-secondary');
 
   nav.append(localButton, vsComputerButton, lanButton, rulesButton, aboutButton);
-  wrapper.append(title, subtitle, nav);
+  wrapper.append(presenter, title, subtitle, nav);
   container.appendChild(wrapper);
 }
 
