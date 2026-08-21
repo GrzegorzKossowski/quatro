@@ -7,11 +7,13 @@ import {
   legalMovesFrom,
   otherPlayer,
   type Board,
+  type Move,
   type Player,
   type Position,
 } from '../game/board.ts';
+import type { NetSession } from '../game/net.ts';
 
-export type GameMode = 'pvp' | 'pvc';
+export type GameMode = 'pvp' | 'pvc' | 'net';
 
 const HUMAN_PLAYER: Player = 1;
 const AI_PLAYER: Player = 2;
@@ -24,6 +26,7 @@ interface GameState {
   legalDestinations: Position[];
   winner: Player | null;
   aiThinking: boolean;
+  peerLeft: boolean;
 }
 
 function samePos(a: Position, b: Position): boolean {
@@ -35,7 +38,12 @@ function playerLabel(player: Player, mode: GameMode): string {
   return mode === 'pvc' ? 'komputera (ciemny)' : 'gracza 2 (ciemny)';
 }
 
-export function renderGame(container: HTMLElement, mode: GameMode, onBack: () => void): void {
+export function renderGame(
+  container: HTMLElement,
+  mode: GameMode,
+  onBack: () => void,
+  netSession?: NetSession,
+): void {
   const state: GameState = {
     board: createInitialBoard(),
     currentPlayer: 1,
@@ -43,6 +51,7 @@ export function renderGame(container: HTMLElement, mode: GameMode, onBack: () =>
     legalDestinations: [],
     winner: null,
     aiThinking: false,
+    peerLeft: false,
   };
 
   container.innerHTML = '';
@@ -81,15 +90,30 @@ export function renderGame(container: HTMLElement, mode: GameMode, onBack: () =>
   backButton.textContent = '← Menu';
   backButton.addEventListener('click', onBack);
 
+  if (mode === 'net') restartButton.classList.add('hidden');
+
   controls.append(restartButton, backButton);
   wrapper.append(status, boardEl, controls);
   container.appendChild(wrapper);
 
+  if (mode === 'net' && netSession) {
+    if (netSession.role === 'host') {
+      netSession.on('move-request', handleHostMoveRequest);
+    } else {
+      netSession.on('move-confirmed', (move) => applyPlayerMove(move));
+    }
+    netSession.on('peer-left', () => {
+      state.peerLeft = true;
+      render();
+    });
+  }
+
   render();
 
   function isInteractive(): boolean {
-    if (state.winner || state.aiThinking) return false;
+    if (state.winner || state.aiThinking || state.peerLeft) return false;
     if (mode === 'pvc' && state.currentPlayer !== HUMAN_PLAYER) return false;
+    if (mode === 'net' && netSession && state.currentPlayer !== netSession.localPlayer) return false;
     return true;
   }
 
@@ -106,7 +130,22 @@ export function renderGame(container: HTMLElement, mode: GameMode, onBack: () =>
     }
 
     if (state.selected && state.legalDestinations.some((d) => samePos(d, pos))) {
-      applyPlayerMove({ from: state.selected, to: pos });
+      const move: Move = { from: state.selected, to: pos };
+
+      if (mode === 'net' && netSession) {
+        if (netSession.role === 'guest') {
+          netSession.requestMove(move);
+          state.selected = null;
+          state.legalDestinations = [];
+          render();
+          return;
+        }
+        applyPlayerMove(move);
+        netSession.broadcastMove(move);
+        return;
+      }
+
+      applyPlayerMove(move);
       return;
     }
 
@@ -122,7 +161,7 @@ export function renderGame(container: HTMLElement, mode: GameMode, onBack: () =>
     render();
   }
 
-  function applyPlayerMove(move: { from: Position; to: Position }): void {
+  function applyPlayerMove(move: Move): void {
     state.board = applyMove(state.board, move);
     const mover = state.currentPlayer;
     state.selected = null;
@@ -142,6 +181,15 @@ export function renderGame(container: HTMLElement, mode: GameMode, onBack: () =>
       render();
       window.setTimeout(runAiMove, AI_MOVE_DELAY_MS);
     }
+  }
+
+  function handleHostMoveRequest(move: Move): void {
+    if (state.winner || state.currentPlayer === netSession?.localPlayer) return;
+    if (getCell(state.board, move.from) !== state.currentPlayer) return;
+    if (!legalMovesFrom(state.board, move.from).some((d) => samePos(d, move.to))) return;
+
+    applyPlayerMove(move);
+    netSession?.broadcastMove(move);
   }
 
   function runAiMove(): void {
@@ -192,10 +240,20 @@ export function renderGame(container: HTMLElement, mode: GameMode, onBack: () =>
     }
 
     if (state.winner) {
-      status.textContent = `Wygrywa ${playerLabel(state.winner, mode)}!`;
+      if (mode === 'net' && netSession) {
+        status.textContent = state.winner === netSession.localPlayer ? 'Wygrałeś!' : 'Przeciwnik wygrywa!';
+      } else {
+        status.textContent = `Wygrywa ${playerLabel(state.winner, mode)}!`;
+      }
       status.classList.add('game-status-win');
     } else if (state.aiThinking) {
       status.textContent = 'Komputer myśli…';
+      status.classList.remove('game-status-win');
+    } else if (mode === 'net' && netSession && state.peerLeft) {
+      status.textContent = 'Przeciwnik opuścił grę.';
+      status.classList.remove('game-status-win');
+    } else if (mode === 'net' && netSession) {
+      status.textContent = state.currentPlayer === netSession.localPlayer ? 'Twoja tura' : 'Tura przeciwnika';
       status.classList.remove('game-status-win');
     } else {
       status.textContent = `Ruch ${playerLabel(state.currentPlayer, mode)}`;

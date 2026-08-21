@@ -28,25 +28,26 @@ Siostrzany projekt referencyjny (ten sam autor, podobny stack): [atoms](https://
 
 ```
 src/game/board.ts     — czysta logika: reprezentacja planszy, generowanie ruchów, detekcja wygranej (bez DOM)
-src/game/ai.ts         — (Faza B) AI dla PvC
-src/game/net.ts         — (Faza C) wrapper na Trystero dla LAN PvP
+src/game/ai.ts         — AI dla PvC (negamax + alfa-beta)
+src/game/net.ts         — wrapper na Trystero: kody pokoi, host-autorytatywna synchronizacja ruchów
 src/ui/menu.ts          — ekran startowy
-src/ui/board-view.ts    — kontroler + render ekranu gry (hotseat PvP)
+src/ui/board-view.ts    — kontroler + render ekranu gry (PvP hotseat / PvC / sieciowe)
+src/ui/net-view.ts      — ekrany LAN: tworzenie/dołączanie do pokoju, oczekiwanie na przeciwnika
 src/ui/rules-view.ts    — ekran zasad
 src/ui/about-view.ts    — ekran "O grze" (disclaimer fanowskiego klonu)
-src/main.ts              — router ekranów (menu/rules/about/game)
+src/main.ts              — router ekranów (menu/rules/about/net/game)
 src/styles/main.css      — cały styling, mobile-first, CSS Grid
 ```
 
-`board.ts` jest celowo pozbawiony zależności od DOM — łatwo go przetestować i użyć zarówno w UI, jak i w przyszłym AI (`ai.ts`) czy walidacji ruchów po sieci (`net.ts`).
+`board.ts` jest celowo pozbawiony zależności od DOM — łatwo go przetestować i użyć zarówno w UI, jak i w AI (`ai.ts`) czy walidacji ruchów po sieci (`net.ts`).
 
 ## Status prac / fazy (kolejność ustalona z użytkownikiem)
 
 - [x] **Faza A — MVP**: lokalne PvP (hotseat), menu, zasady, disclaimer, deploy na GitHub Pages.
 - [x] **Faza B**: PvC (AI negamax/alpha-beta, `src/game/ai.ts`, głębokość 5, heurystyka oparta o 18 wzorców wygranej).
-- [ ] **Faza C**: PvP sieciowe przez Trystero (kod pokoju, limit 2 graczy, sync ruchów).
+- [x] **Faza C**: PvP sieciowe przez Trystero (`src/game/net.ts`, `src/ui/net-view.ts`) — kod pokoju (6 znaków), limit 2 graczy (nadmiarowi peerzy są rozłączani), host autorytatywny (stosuje i rozgłasza każdy ruch, gość wysyła prośby o ruch i czeka na potwierdzenie), sync ruchów przez `Move` (`{from, to}`).
 
-Przycisk "Gra sieciowa (LAN)" w menu jest już widoczny, ale wyłączony ("wkrótce") do czasu ukończenia Fazy C. Człowiek zawsze gra jasnymi (gracz 1, zaczyna), komputer ciemnymi (gracz 2).
+Przycisk "Gra sieciowa (LAN)" w menu jest aktywny. Człowiek zawsze gra jasnymi (gracz 1, zaczyna) w PvP/PvC; w trybie sieciowym host gra jasnymi (zaczyna), gość ciemnymi. Brak rewanżu po zakończeniu gry sieciowej — powrót do menu kończy sesję.
 
 ## Komendy
 
