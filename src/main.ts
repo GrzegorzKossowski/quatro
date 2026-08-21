@@ -1,5 +1,5 @@
 import { renderAbout } from './ui/about-view.ts';
-import { renderGame } from './ui/board-view.ts';
+import { renderGame, type GameMode } from './ui/board-view.ts';
 import { renderMenu } from './ui/menu.ts';
 import { renderRules } from './ui/rules-view.ts';
 
@@ -8,11 +8,12 @@ type Screen = 'menu' | 'rules' | 'about' | 'game';
 const app = document.getElementById('app');
 if (!app) throw new Error('#app root element not found');
 
-function showScreen(screen: Screen): void {
+function showScreen(screen: Screen, gameMode: GameMode = 'pvp'): void {
   switch (screen) {
     case 'menu':
       renderMenu(app!, {
-        onLocalGame: () => showScreen('game'),
+        onLocalGame: () => showScreen('game', 'pvp'),
+        onVsComputer: () => showScreen('game', 'pvc'),
         onRules: () => showScreen('rules'),
         onAbout: () => showScreen('about'),
       });
@@ -24,7 +25,7 @@ function showScreen(screen: Screen): void {
       renderAbout(app!, () => showScreen('menu'));
       break;
     case 'game':
-      renderGame(app!, () => showScreen('menu'));
+      renderGame(app!, gameMode, () => showScreen('menu'));
       break;
   }
 }

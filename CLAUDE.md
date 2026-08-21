@@ -43,10 +43,10 @@ src/styles/main.css      — cały styling, mobile-first, CSS Grid
 ## Status prac / fazy (kolejność ustalona z użytkownikiem)
 
 - [x] **Faza A — MVP**: lokalne PvP (hotseat), menu, zasady, disclaimer, deploy na GitHub Pages.
-- [ ] **Faza B**: PvC (AI minimax/alpha-beta).
+- [x] **Faza B**: PvC (AI negamax/alpha-beta, `src/game/ai.ts`, głębokość 5, heurystyka oparta o 18 wzorców wygranej).
 - [ ] **Faza C**: PvP sieciowe przez Trystero (kod pokoju, limit 2 graczy, sync ruchów).
 
-Przyciski "Gra z komputerem" i "Gra sieciowa (LAN)" w menu są już widoczne, ale wyłączone ("wkrótce") do czasu ukończenia odpowiednich faz.
+Przycisk "Gra sieciowa (LAN)" w menu jest już widoczny, ale wyłączony ("wkrótce") do czasu ukończenia Fazy C. Człowiek zawsze gra jasnymi (gracz 1, zaczyna), komputer ciemnymi (gracz 2).
 
 ## Komendy
 

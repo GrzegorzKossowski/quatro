@@ -1,5 +1,6 @@
 export interface MenuActions {
   onLocalGame: () => void;
+  onVsComputer: () => void;
   onRules: () => void;
   onAbout: () => void;
 }
@@ -22,7 +23,7 @@ export function renderMenu(container: HTMLElement, actions: MenuActions): void {
 
   const localButton = makeButton('Gra lokalna (2 graczy)', actions.onLocalGame);
 
-  const vsComputerButton = makeButton('Gra z komputerem', undefined, true);
+  const vsComputerButton = makeButton('Gra z komputerem', actions.onVsComputer);
   const lanButton = makeButton('Gra sieciowa (LAN)', undefined, true);
 
   const rulesButton = makeButton('Zasady gry', actions.onRules, false, 'btn-secondary');

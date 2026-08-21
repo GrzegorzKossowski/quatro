@@ -1,3 +1,4 @@
+import { chooseMove } from '../game/ai.ts';
 import {
   applyMove,
   checkWin,
@@ -10,25 +11,38 @@ import {
   type Position,
 } from '../game/board.ts';
 
+export type GameMode = 'pvp' | 'pvc';
+
+const HUMAN_PLAYER: Player = 1;
+const AI_PLAYER: Player = 2;
+const AI_MOVE_DELAY_MS = 400;
+
 interface GameState {
   board: Board;
   currentPlayer: Player;
   selected: Position | null;
   legalDestinations: Position[];
   winner: Player | null;
+  aiThinking: boolean;
 }
 
 function samePos(a: Position, b: Position): boolean {
   return a.row === b.row && a.col === b.col;
 }
 
-export function renderGame(container: HTMLElement, onBack: () => void): void {
+function playerLabel(player: Player, mode: GameMode): string {
+  if (player === 1) return 'gracza 1 (jasny)';
+  return mode === 'pvc' ? 'komputera (ciemny)' : 'gracza 2 (ciemny)';
+}
+
+export function renderGame(container: HTMLElement, mode: GameMode, onBack: () => void): void {
   const state: GameState = {
     board: createInitialBoard(),
     currentPlayer: 1,
     selected: null,
     legalDestinations: [],
     winner: null,
+    aiThinking: false,
   };
 
   container.innerHTML = '';
@@ -73,8 +87,14 @@ export function renderGame(container: HTMLElement, onBack: () => void): void {
 
   render();
 
+  function isInteractive(): boolean {
+    if (state.winner || state.aiThinking) return false;
+    if (mode === 'pvc' && state.currentPlayer !== HUMAN_PLAYER) return false;
+    return true;
+  }
+
   function handleCellClick(pos: Position): void {
-    if (state.winner) return;
+    if (!isInteractive()) return;
 
     const clickedPiece = getCell(state.board, pos);
 
@@ -86,16 +106,7 @@ export function renderGame(container: HTMLElement, onBack: () => void): void {
     }
 
     if (state.selected && state.legalDestinations.some((d) => samePos(d, pos))) {
-      state.board = applyMove(state.board, { from: state.selected, to: pos });
-      const mover = state.currentPlayer;
-      state.selected = null;
-      state.legalDestinations = [];
-      if (checkWin(state.board, mover)) {
-        state.winner = mover;
-      } else {
-        state.currentPlayer = otherPlayer(mover);
-      }
-      render();
+      applyPlayerMove({ from: state.selected, to: pos });
       return;
     }
 
@@ -111,12 +122,53 @@ export function renderGame(container: HTMLElement, onBack: () => void): void {
     render();
   }
 
+  function applyPlayerMove(move: { from: Position; to: Position }): void {
+    state.board = applyMove(state.board, move);
+    const mover = state.currentPlayer;
+    state.selected = null;
+    state.legalDestinations = [];
+
+    if (checkWin(state.board, mover)) {
+      state.winner = mover;
+      render();
+      return;
+    }
+
+    state.currentPlayer = otherPlayer(mover);
+    render();
+
+    if (mode === 'pvc' && state.currentPlayer === AI_PLAYER) {
+      state.aiThinking = true;
+      render();
+      window.setTimeout(runAiMove, AI_MOVE_DELAY_MS);
+    }
+  }
+
+  function runAiMove(): void {
+    const move = chooseMove(state.board, AI_PLAYER);
+    state.aiThinking = false;
+
+    if (!move) {
+      render();
+      return;
+    }
+
+    state.board = applyMove(state.board, move);
+    if (checkWin(state.board, AI_PLAYER)) {
+      state.winner = AI_PLAYER;
+    } else {
+      state.currentPlayer = HUMAN_PLAYER;
+    }
+    render();
+  }
+
   function restart(): void {
     state.board = createInitialBoard();
     state.currentPlayer = 1;
     state.selected = null;
     state.legalDestinations = [];
     state.winner = null;
+    state.aiThinking = false;
     render();
   }
 
@@ -126,7 +178,7 @@ export function renderGame(container: HTMLElement, onBack: () => void): void {
       const value = getCell(state.board, pos);
       const cell = cells[i]!;
       cell.className = 'cell';
-      cell.disabled = state.winner !== null;
+      cell.disabled = !isInteractive();
 
       if (value === 1) cell.classList.add('piece-light');
       else if (value === 2) cell.classList.add('piece-dark');
@@ -140,10 +192,13 @@ export function renderGame(container: HTMLElement, onBack: () => void): void {
     }
 
     if (state.winner) {
-      status.textContent = `Wygrywa gracz ${state.winner === 1 ? '1 (jasny)' : '2 (ciemny)'}!`;
+      status.textContent = `Wygrywa ${playerLabel(state.winner, mode)}!`;
       status.classList.add('game-status-win');
+    } else if (state.aiThinking) {
+      status.textContent = 'Komputer myśli…';
+      status.classList.remove('game-status-win');
     } else {
-      status.textContent = `Ruch gracza ${state.currentPlayer === 1 ? '1 (jasny)' : '2 (ciemny)'}`;
+      status.textContent = `Ruch ${playerLabel(state.currentPlayer, mode)}`;
       status.classList.remove('game-status-win');
     }
   }
