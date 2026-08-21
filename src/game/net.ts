@@ -43,7 +43,11 @@ export interface NetSession {
 // podwójnych kliknięciach ani wyścigach, bez potrzeby wysyłania całej planszy.
 function createSession(role: NetRole, roomCode: string): NetSession {
   const room = joinRoom({ appId: APP_ID }, roomCode);
-  const listeners: { [K in keyof NetSessionEvents]?: Array<(...args: NetSessionEvents[K]) => void> } = {};
+  // Jeden aktywny odbiorca na zdarzenie: kolejne wywołanie on() dla tej samej
+  // nazwy podmienia poprzedni handler zamiast go dokladac. Dzieki temu ponowne
+  // wywolanie renderGame() dla tej samej sesji (rewanz bez opuszczania pokoju)
+  // nie zostawia "martwych" nasluchiwaczy z poprzedniej rozgrywki.
+  const listeners: { [K in keyof NetSessionEvents]?: (...args: NetSessionEvents[K]) => void } = {};
 
   // Kody pokoi są krótkie i może do nich dołączyć każdy, kto je zna (lub
   // odgadnie), więc pokój może przyciągnąć więcej niż dwóch graczy. Tylko
@@ -53,14 +57,12 @@ function createSession(role: NetRole, roomCode: string): NetSession {
   let remotePeerId: string | null = null;
 
   function on<K extends keyof NetSessionEvents>(name: K, cb: (...args: NetSessionEvents[K]) => void): void {
-    if (!listeners[name]) listeners[name] = [];
-    (listeners[name] as Array<(...args: NetSessionEvents[K]) => void>).push(cb);
+    (listeners as Record<string, unknown>)[name] = cb;
   }
 
   function emit<K extends keyof NetSessionEvents>(name: K, ...args: NetSessionEvents[K]): void {
-    const cbs = listeners[name] as Array<(...args: NetSessionEvents[K]) => void> | undefined;
-    if (!cbs) return;
-    for (const cb of [...cbs]) cb(...args);
+    const cb = listeners[name] as ((...args: NetSessionEvents[K]) => void) | undefined;
+    cb?.(...args);
   }
 
   function rejectPeer(peerId: string): void {

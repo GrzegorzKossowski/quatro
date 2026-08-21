@@ -91,15 +91,24 @@ export function renderGame(
   restartButton.type = 'button';
   restartButton.className = 'btn';
   restartButton.textContent = 'Nowa gra';
-  restartButton.addEventListener('click', restart);
+  restartButton.addEventListener('click', () => {
+    if (mode === 'net' && netSession) {
+      if (netSession.role === 'host') netSession.start();
+      return;
+    }
+    restart();
+  });
+
+  if (mode === 'net' && netSession?.role === 'guest') {
+    restartButton.textContent = 'Nowa gra (decyduje host)';
+    restartButton.disabled = true;
+  }
 
   const backButton = document.createElement('button');
   backButton.type = 'button';
   backButton.className = 'btn btn-secondary';
   backButton.textContent = '← Menu';
   backButton.addEventListener('click', onBack);
-
-  if (mode === 'net') restartButton.classList.add('hidden');
 
   controls.append(restartButton, backButton);
   wrapper.append(status, boardEl, controls);
@@ -230,6 +239,10 @@ export function renderGame(
   }
 
   function render(): void {
+    if (mode === 'net' && netSession?.role === 'host') {
+      restartButton.disabled = state.peerLeft;
+    }
+
     for (let i = 0; i < 16; i++) {
       const pos: Position = { row: Math.floor(i / 4), col: i % 4 };
       const value = getCell(state.board, pos);
