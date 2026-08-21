@@ -126,6 +126,21 @@ h1 {
   display: none;
 }
 
+.net-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  width: 100%;
+}
+
+.net-mode-label {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
 .net-room-code {
   font-size: 2.5rem;
   font-weight: bold;

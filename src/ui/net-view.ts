@@ -37,8 +37,17 @@ export function renderNet(container: HTMLElement, actions: NetActions): void {
   function showChoice(): void {
     wrapper.innerHTML = '';
 
+    const header = document.createElement('div');
+    header.className = 'net-header';
+
     const title = document.createElement('h1');
-    title.textContent = 'Gra sieciowa (LAN)';
+    title.textContent = 'Quatro';
+
+    const modeLabel = document.createElement('p');
+    modeLabel.className = 'net-mode-label';
+    modeLabel.textContent = 'gra sieciowa (LAN)';
+
+    header.append(title, modeLabel);
 
     const info = document.createElement('p');
     info.className = 'subtitle';
@@ -48,7 +57,7 @@ export function renderNet(container: HTMLElement, actions: NetActions): void {
     const joinButton = makeButton('Dołącz do pokoju', showJoinForm);
     const backButton = makeButton('← Menu', backToMenu, 'btn-secondary');
 
-    wrapper.append(title, info, hostButton, joinButton, backButton);
+    wrapper.append(header, info, hostButton, joinButton, backButton);
   }
 
   function showHostRoom(): void {
